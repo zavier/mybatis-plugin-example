@@ -1,5 +1,10 @@
 package com.github.zavier.mybatis.plugin;
 
+import com.alibaba.druid.DbType;
+import com.alibaba.druid.sql.ast.SQLStatement;
+import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
+import com.alibaba.druid.sql.parser.SQLParserUtils;
+import com.alibaba.druid.sql.parser.SQLStatementParser;
 import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.plugin.Interceptor;
@@ -39,16 +44,26 @@ public class PageInterceptor implements Interceptor {
             final StatementHandler statementHandler = (StatementHandler) invocation.getTarget();
             final BoundSql boundSql = statementHandler.getBoundSql();
             final String sql = boundSql.getSql();
-            // 修改SQL数据后重新赋值回去
-            String newSql = sql + " limit " + page.getSize() + " offset " + offset;
-            final MetaObject metaObject = SystemMetaObject.forObject(boundSql);
-            metaObject.setValue("sql", newSql);
 
+            // SQL是否是查询
+            final boolean selectSql = isSelectSql(sql);
+            if (selectSql) {
+                // 修改SQL数据后重新赋值回去
+                String newSql = sql + " limit " + page.getSize() + " offset " + offset;
+                final MetaObject metaObject = SystemMetaObject.forObject(boundSql);
+                metaObject.setValue("sql", newSql);
+            }
         } finally {
             pageThreadLocal.remove();
         }
 
         return invocation.proceed();
+    }
+
+    private boolean isSelectSql(String sql) {
+        SQLStatementParser parser = SQLParserUtils.createSQLStatementParser(sql, DbType.mysql);
+        final SQLStatement sqlStatement = parser.parseStatement();
+        return sqlStatement instanceof SQLSelectStatement;
     }
 
     static class Page {
