@@ -55,7 +55,7 @@ public Executor newExecutor(Transaction transaction, ExecutorType executorType) 
 
 要想更好的使用MyBatis的插件功能，首先需要对拦截到的类和方法进行了解，以一次查询为例我们看一下相关流程
 
-<img src="/images/mybatis-query.jpg" style="zoom:60%" />
+<img src="https://www.zhengw-tech.com/images/mybatis-query.jpg" style="zoom:60%" />
 
 Executor: Executor是SqlSession中执行功能使用到的类，如查询时，首先从Configuration或获取MappedStatement（可以认为是对应的mapper.xml中的 SELECT节点信息），之后和具体的参数值一起传递给Executor的query方法使用
 
